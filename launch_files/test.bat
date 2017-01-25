@@ -1,0 +1,12 @@
+"../bin/Release/caffe_char_rnn" ^
+--train=false ^
+--gpu=true ^
+--sequence_length=75 ^
+--batch_size=25 ^
+--temperature=0.5 ^
+--vocabulary=vocabulary_62.txt ^
+--model=caffe_char_rnn.prototxt ^
+--weights=caffe_char_rnn_iter_100000.caffemodel ^
+--seed="To be, or not to be: that is the question:" ^
+--number_of_predictions=1500 ^
+--output_file=test.txt

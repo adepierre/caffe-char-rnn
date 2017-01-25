@@ -1,0 +1,137 @@
+layer {
+	name: "Input"
+	type: "Input"
+	top: "data"
+	top: "clip"
+	top: "label"
+	input_param {
+		shape {
+			dim: 75 #sequence_length
+			dim: 25 #batch_size
+		}
+		shape {
+			dim: 75 #sequence_length
+			dim: 25 #batch_size
+		}
+		shape {
+			dim: 1875 #sequence_length*batch_size
+			dim: 1
+		}
+	}
+}
+
+layer {
+	name: "EmbedLayer"
+	type: "Embed"
+	bottom: "data"
+	top: "inputVectors"
+	embed_param {
+		input_dim: 62 #vocabulary_size
+		num_output: 15
+	}
+}
+
+layer {
+  name: "lstm1"
+  type: "LSTM"
+  bottom: "inputVectors"
+  bottom: "clip"
+  top: "lstm1"
+
+recurrent_param {
+    num_output: 512
+    weight_filler {
+      type: "uniform"
+      min: -0.01
+      max: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+
+layer {
+	name: "Drop1"
+	type: "Dropout"
+	bottom: "lstm1"
+	top: "lstm1_drop"
+	dropout_param {
+		dropout_ratio: 0.4
+	}
+}
+
+layer {
+  name: "lstm2"
+  type: "LSTM"
+  bottom: "lstm1_drop"
+  bottom: "clip"
+  top: "lstm2"
+
+recurrent_param {
+    num_output: 512
+    weight_filler {
+      type: "uniform"
+      min: -0.01
+      max: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+
+layer {
+	name: "Drop2"
+	type: "Dropout"
+	bottom: "lstm2"
+	top: "lstm2_drop"
+	dropout_param {
+		dropout_ratio: 0.4
+	}
+}
+
+#This layer is useful only when batch_size > 1
+#You can remove it if you don't want to use batch
+
+layer {
+	name: "Reshape_lstm2"
+	type: "Reshape"
+	bottom: "lstm2_drop"
+	top: "lstm2_reshaped"
+	reshape_param {
+		shape {
+			dim: -1
+			dim: 1
+			dim: 512 #lstm2 num_output
+		}
+	}
+} 
+
+layer {
+  name: "ip1"
+  type: "InnerProduct"
+  bottom: "lstm2_reshaped"
+  top: "ip1"
+
+  inner_product_param {
+    num_output: 62 #vocabulary_size
+    weight_filler {
+      type: "gaussian"
+      std: 0.1
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+
+layer {
+  name: "Loss"
+  type: "SoftmaxWithLoss"
+  bottom: "ip1"
+  bottom: "label"
+  top: "loss"
+}
