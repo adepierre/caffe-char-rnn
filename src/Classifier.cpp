@@ -72,7 +72,7 @@ Classifier::Classifier(const std::string &model_file,
 	clipBlob->set_cpu_data(clip.data());
 
 	//Temperature can't be negative
-	temperature = abs(temperature_);
+	temperature = std::abs(temperature_);
 	if (temperature > 1.0f)
 	{
 		temperature = 1.0f;
